@@ -1,0 +1,45 @@
+<div class="dashboard-container">
+  <h1>Panel de Administración</h1>
+
+  <div *ngIf="loading" class="loading">
+    <p>Cargando estadísticas...</p>
+  </div>
+
+  <div *ngIf="!loading" class="estadisticas-grid">
+    <div class="stat-card">
+      <div class="stat-icon">👥</div>
+      <div class="stat-info">
+        <h3>Total Usuarios</h3>
+        <p class="stat-number">{{ estadisticas.totalUsuarios }}</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">📦</div>
+      <div class="stat-info">
+        <h3>Total Productos</h3>
+        <p class="stat-number">{{ estadisticas.totalProductos }}</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">✅</div>
+      <div class="stat-info">
+        <h3>Productos Activos</h3>
+        <p class="stat-number">{{ estadisticas.productosActivos }}</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">💰</div>
+      <div class="stat-info">
+        <h3>Productos Vendidos</h3>
+        <p class="stat-number">{{ estadisticas.productosVendidos }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-info">
+    <p>Bienvenido al panel de administración. Aquí puedes ver las estadísticas generales de la plataforma.</p>
+  </div>
+</div>

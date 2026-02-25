@@ -1,0 +1,171 @@
+<div class="container mt-5 mb-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="card shadow-lg">
+        <div class="card-body p-5">
+          <!-- Header -->
+          <div class="text-center mb-4">
+            <i class="bi bi-key text-primary" style="font-size: 3rem;"></i>
+            <h2 class="mt-3">Recuperar Contraseña</h2>
+            <p class="text-muted">Sigue los pasos para restablecer tu contraseña</p>
+          </div>
+
+          <!-- Indicador de pasos -->
+          <div class="steps-indicator mb-4">
+            <div class="step" [class.active]="paso >= 1" [class.completed]="paso > 1">
+              <div class="step-number">1</div>
+              <div class="step-label">Email</div>
+            </div>
+            <div class="step-line" [class.active]="paso > 1"></div>
+            <div class="step" [class.active]="paso >= 2" [class.completed]="paso > 2">
+              <div class="step-number">2</div>
+              <div class="step-label">Pregunta</div>
+            </div>
+            <div class="step-line" [class.active]="paso > 2"></div>
+            <div class="step" [class.active]="paso >= 3">
+              <div class="step-number">3</div>
+              <div class="step-label">Nueva Contraseña</div>
+            </div>
+          </div>
+
+          <!-- Mensaje de error -->
+          <div class="alert alert-danger" *ngIf="errorMessage">
+            <i class="bi bi-exclamation-triangle"></i> {{ errorMessage }}
+          </div>
+
+          <!-- PASO 1: Verificar Email -->
+          <div *ngIf="paso === 1">
+            <div class="mb-4">
+              <label for="email" class="form-label">Email de tu cuenta</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                <input 
+                  type="email" 
+                  class="form-control" 
+                  id="email" 
+                  [(ngModel)]="email"
+                  placeholder="correo@ejemplo.com"
+                  [disabled]="isLoading"
+                  (keyup.enter)="verificarEmail()">
+              </div>
+            </div>
+
+            <div class="d-grid gap-2">
+              <button 
+                class="btn btn-primary btn-lg" 
+                (click)="verificarEmail()"
+                [disabled]="isLoading">
+                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                {{ isLoading ? 'Verificando...' : 'Continuar' }}
+              </button>
+              <a routerLink="/login" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Volver al login
+              </a>
+            </div>
+          </div>
+
+          <!-- PASO 2: Responder Pregunta -->
+          <div *ngIf="paso === 2">
+            <div class="alert alert-info mb-4">
+              <i class="bi bi-question-circle"></i>
+              <strong>Pregunta de Seguridad:</strong>
+              <p class="mb-0 mt-2">{{ preguntaSeguridad }}</p>
+            </div>
+
+            <div class="mb-4">
+              <label for="respuesta" class="form-label">Tu respuesta</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="respuesta" 
+                [(ngModel)]="respuesta"
+                placeholder="Escribe tu respuesta"
+                [disabled]="isLoading"
+                (keyup.enter)="verificarRespuesta()">
+              <small class="text-muted">La respuesta no distingue mayúsculas/minúsculas</small>
+            </div>
+
+            <div class="d-grid gap-2">
+              <button 
+                class="btn btn-primary btn-lg" 
+                (click)="verificarRespuesta()"
+                [disabled]="isLoading">
+                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                {{ isLoading ? 'Verificando...' : 'Verificar Respuesta' }}
+              </button>
+              <button 
+                class="btn btn-outline-secondary" 
+                (click)="volverPaso()"
+                [disabled]="isLoading">
+                <i class="bi bi-arrow-left"></i> Volver
+              </button>
+            </div>
+          </div>
+
+          <!-- PASO 3: Nueva Contraseña -->
+          <div *ngIf="paso === 3">
+            <div class="alert alert-success mb-4">
+              <i class="bi bi-check-circle"></i>
+              <strong>¡Verificación exitosa!</strong>
+              <p class="mb-0">Ahora puedes establecer una nueva contraseña</p>
+            </div>
+
+            <div class="mb-3">
+              <label for="nuevaContrasena" class="form-label">Nueva Contraseña</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                <input 
+                  type="password" 
+                  class="form-control" 
+                  id="nuevaContrasena" 
+                  [(ngModel)]="nuevaContrasena"
+                  placeholder="Mínimo 6 caracteres"
+                  [disabled]="isLoading">
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label for="confirmarContrasena" class="form-label">Confirmar Contraseña</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                <input 
+                  type="password" 
+                  class="form-control" 
+                  id="confirmarContrasena" 
+                  [(ngModel)]="confirmarContrasena"
+                  placeholder="Repite tu contraseña"
+                  [disabled]="isLoading"
+                  (keyup.enter)="restablecerContrasena()">
+              </div>
+            </div>
+
+            <div class="d-grid gap-2">
+              <button 
+                class="btn btn-success btn-lg" 
+                (click)="restablecerContrasena()"
+                [disabled]="isLoading">
+                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                <i class="bi bi-check-circle" *ngIf="!isLoading"></i>
+                {{ isLoading ? 'Guardando...' : 'Restablecer Contraseña' }}
+              </button>
+              <button 
+                class="btn btn-outline-secondary" 
+                (click)="volverPaso()"
+                [disabled]="isLoading">
+                <i class="bi bi-arrow-left"></i> Volver
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Link adicional -->
+      <div class="text-center mt-4">
+        <p class="text-muted">
+          ¿Recordaste tu contraseña? 
+          <a routerLink="/login" class="text-primary fw-bold">Inicia sesión</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

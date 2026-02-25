@@ -1,0 +1,144 @@
+.imagen-principal {
+  width: 100%;
+  height: 500px;
+  object-fit: contain;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  position: relative;
+}
+
+.imagen-principal img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Botones de navegación de imágenes */
+.btn-navegacion {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: all 0.3s;
+  z-index: 10;
+  padding: 0;
+}
+
+.btn-navegacion:hover {
+  opacity: 1;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.btn-anterior {
+  left: 15px;
+}
+
+.btn-siguiente {
+  right: 15px;
+}
+
+.btn-navegacion i {
+  font-size: 1.5rem;
+}
+
+/* Contador de imágenes */
+.contador-imagenes {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  z-index: 10;
+}
+
+.miniaturas {
+  padding: 10px 0;
+}
+
+.miniatura {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+
+.miniatura:hover {
+  border-color: #0d6efd;
+  transform: scale(1.05);
+}
+
+.miniatura.active {
+  border-color: #0d6efd;
+  box-shadow: 0 0 8px rgba(13, 110, 253, 0.5);
+}
+
+.badge-estado {
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+}
+
+.info-vendedor {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.btn-whatsapp {
+  background-color: #25D366;
+  border-color: #25D366;
+  color: white;
+}
+
+.btn-whatsapp:hover {
+  background-color: #128C7E;
+  border-color: #128C7E;
+  color: white;
+}
+/* Estilos del modal */
+.modal.show {
+  display: block;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-backdrop.show {
+  opacity: 0.5;
+}
+
+.modal-content {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+  border-radius: 15px 15px 0 0;
+}
+
+/* Estilos del mapa de ubicación */
+.map-container-detalle {
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-top: 1rem;
+  height: 400px;
+  width: 100%;
+}
+
+.map-container-detalle > div {
+  height: 100%;
+  width: 100%;
+}

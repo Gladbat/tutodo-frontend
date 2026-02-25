@@ -1,0 +1,162 @@
+<!-- Hero Section Mejorado -->
+<div class="hero-section text-white text-center">
+  <div class="hero-background">
+    <div class="hero-shape shape-1"></div>
+    <div class="hero-shape shape-2"></div>
+    <div class="hero-shape shape-3"></div>
+  </div>
+  
+  <div class="container hero-content">
+    <div class="hero-badge">
+      <i class="bi bi-stars"></i>
+      <span>Marketplace #1 en La Libertad</span>
+    </div>
+    
+    <h1 class="hero-title">
+      Bienvenido a <span class="gradient-text">TUTODO</span>
+    </h1>
+    
+    <p class="hero-subtitle">
+      Compra y vende todo lo que necesites de forma segura y fácil.<br>
+      Conecta con personas de tu zona y dale una segunda vida a tus productos.
+    </p>
+    
+    <!-- Botones solo si está logueado -->
+    <div class="hero-buttons" *ngIf="authService.getCurrentUser()">
+      <a routerLink="/productos" class="btn-hero btn-hero-primary">
+        <i class="bi bi-search"></i>
+        <span>Explorar Productos</span>
+      </a>
+      <a routerLink="/publicar" class="btn-hero btn-hero-secondary">
+        <i class="bi bi-plus-circle"></i>
+        <span>Publicar Gratis</span>
+      </a>
+    </div>
+    
+    <!-- Mensaje si no está logueado -->
+    <div class="hero-login-message" *ngIf="!authService.getCurrentUser()">
+      <p>Inicia sesión para comenzar a comprar y vender</p>
+      <div class="hero-buttons">
+        <a routerLink="/login" class="btn-hero btn-hero-primary">
+          <i class="bi bi-box-arrow-in-right"></i>
+          <span>Iniciar Sesión</span>
+        </a>
+        <a routerLink="/register" class="btn-hero btn-hero-secondary">
+          <i class="bi bi-person-plus"></i>
+          <span>Registrarse</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Productos Recientes -->
+<div class="container my-5">
+  <div class="section-header text-center mb-5">
+    <span class="section-badge">
+      <i class="bi bi-lightning-fill"></i> Recién Publicados
+    </span>
+    <h2 class="section-title">Productos Recientes</h2>
+    <p class="section-subtitle">Descubre las últimas publicaciones de nuestra comunidad</p>
+  </div>
+
+  <!-- Skeleton Loader -->
+  <div class="row" *ngIf="isLoading">
+    <div class="col-md-4 mb-4" *ngFor="let item of [1,2,3,4,5,6]">
+      <div class="card skeleton-card">
+        <div class="skeleton skeleton-image"></div>
+        <div class="card-body">
+          <div class="skeleton skeleton-title"></div>
+          <div class="skeleton skeleton-text"></div>
+          <div class="skeleton skeleton-price"></div>
+          <div class="skeleton skeleton-button"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sin productos -->
+  <div class="empty-state" *ngIf="!isLoading && productosRecientes.length === 0">
+    <div class="empty-icon">
+      <i class="bi bi-inbox"></i>
+    </div>
+    <h3 class="empty-title">No hay productos publicados aún</h3>
+    <p class="empty-text">Sé el primero en compartir algo increíble con la comunidad</p>
+    <a routerLink="/publicar" class="btn-hero btn-hero-primary" *ngIf="authService.getCurrentUser()">
+      <i class="bi bi-plus-circle"></i>
+      <span>Publicar Ahora</span>
+    </a>
+  </div>
+
+  <!-- Lista de productos mejorada -->
+  <div class="row" *ngIf="!isLoading && productosRecientes.length > 0">
+    <div class="col-md-4 mb-4" *ngFor="let producto of productosRecientes">
+      <div class="product-card">
+        <div class="product-image-wrapper">
+          <img 
+            [src]="getImageUrl(producto)" 
+            class="product-image" 
+            [alt]="producto.nombre">
+          <div class="product-badge">
+            <i class="bi bi-tag-fill"></i>
+            {{ producto.categoriaNombre }}
+          </div>
+        </div>
+        
+        <div class="product-body">
+          <h5 class="product-title">{{ producto.nombre }}</h5>
+          
+          <div class="product-meta">
+            <span class="product-location">
+              <i class="bi bi-geo-alt-fill"></i>
+              La Libertad
+            </span>
+            <span class="product-time">
+              <i class="bi bi-clock-fill"></i>
+              Hace 2h
+            </span>
+          </div>
+          
+          <div class="product-footer">
+            <div class="product-price">
+              <span class="price-label">Precio</span>
+              <span class="price-value">S/ {{ producto.precio }}</span>
+            </div>
+            
+            <a [routerLink]="['/productos', producto.id]" 
+               class="btn-product" 
+               *ngIf="authService.getCurrentUser()">
+              Ver Detalles
+              <i class="bi bi-arrow-right"></i>
+            </a>
+            
+            <a routerLink="/login" 
+               class="btn-product btn-product-outline" 
+               *ngIf="!authService.getCurrentUser()">
+              Iniciar Sesión
+              <i class="bi bi-box-arrow-in-right"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center mt-5" *ngIf="authService.getCurrentUser() && productosRecientes.length > 0">
+    <a routerLink="/productos" class="btn-view-all">
+      Ver Todos los Productos
+      <i class="bi bi-arrow-right"></i>
+    </a>
+  </div>
+</div>
+
+<!-- CTA Section -->
+<div class="bg-light py-5" *ngIf="authService.getCurrentUser()">
+  <div class="container text-center">
+    <h2 class="fw-bold mb-3">¿Tienes algo para vender?</h2>
+    <p class="lead text-muted mb-4">Publica gratis y conecta con compradores en tu zona</p>
+    <a routerLink="/publicar" class="btn btn-primary btn-lg">
+      <i class="bi bi-plus-circle"></i> Publicar Ahora
+    </a>
+  </div>
+</div>

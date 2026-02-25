@@ -1,0 +1,165 @@
+<div class="container mt-5 mb-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card shadow-lg">
+        <div class="card-body p-5">
+          <div class="text-center mb-4">
+            <i class="bi bi-person-plus text-primary" style="font-size: 3rem;"></i>
+            <h2 class="mt-3">Crear Cuenta</h2>
+            <p class="text-muted">Únete a Tutodo y empieza a comprar y vender</p>
+          </div>
+          
+          <div class="alert alert-danger" *ngIf="errorMessage">
+            <i class="bi bi-exclamation-triangle"></i> {{ errorMessage }}
+          </div>
+          
+          <form (ngSubmit)="onSubmit()">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="nombre" class="form-label">Nombre</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  id="nombre" 
+                  [(ngModel)]="registerData.nombre"
+                  name="nombre"
+                  required
+                  placeholder="Juan">
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label for="apellido" class="form-label">Apellido</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  id="apellido" 
+                  [(ngModel)]="registerData.apellido"
+                  name="apellido"
+                  required
+                  placeholder="Pérez">
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="email" class="form-label">Email</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                <input 
+                  type="email" 
+                  class="form-control" 
+                  id="email" 
+                  [(ngModel)]="registerData.email"
+                  name="email"
+                  required
+                  placeholder="correo@ejemplo.com">
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="numeroWhatsapp" class="form-label">Número de WhatsApp</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light text-dark fw-bold" style="min-width: 60px;">
+                  <i class="bi bi-whatsapp me-1"></i> +51
+                </span>
+                <input 
+                  type="tel" 
+                  class="form-control" 
+                  id="numeroWhatsapp" 
+                  [(ngModel)]="whatsappInput"
+                  (input)="onWhatsappInput()"
+                  name="whatsappInput"
+                  required
+                  maxlength="11"
+                  placeholder="987 654 321">
+              </div>
+              <small class="text-muted">Ingresa 9 dígitos (se aceptan espacios)</small>
+            </div>
+            
+            <div class="mb-3">
+              <label for="contrasena" class="form-label">Contraseña</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                <input 
+                  type="password" 
+                  class="form-control" 
+                  id="contrasena" 
+                  [(ngModel)]="registerData.contrasena"
+                  name="contrasena"
+                  required
+                  minlength="6"
+                  placeholder="Mínimo 6 caracteres">
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="confirmarContrasena" class="form-label">Confirmar Contraseña</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                <input 
+                  type="password" 
+                  class="form-control" 
+                  id="confirmarContrasena" 
+                  [(ngModel)]="confirmarContrasena"
+                  name="confirmarContrasena"
+                  required
+                  placeholder="Repite tu contraseña">
+              </div>
+            </div>
+
+            <!-- Pregunta de Seguridad -->
+            <div class="alert alert-info mb-3">
+              <i class="bi bi-shield-check"></i>
+              <strong>Pregunta de Seguridad</strong>
+              <p class="mb-0 small">Para recuperar tu contraseña en caso de olvido</p>
+            </div>
+
+            <div class="mb-3">
+              <label for="preguntaSeguridad" class="form-label">Pregunta de Seguridad</label>
+              <select 
+                class="form-select" 
+                id="preguntaSeguridad" 
+                [(ngModel)]="registerData.preguntaSeguridad"
+                name="preguntaSeguridad"
+                required>
+                <option value="">Selecciona una pregunta...</option>
+                <option value="¿Cuál es el nombre de tu primera mascota?">¿Cuál es el nombre de tu primera mascota?</option>
+                <option value="¿En qué ciudad naciste?">¿En qué ciudad naciste?</option>
+                <option value="¿Cuál es tu comida favorita?">¿Cuál es tu comida favorita?</option>
+                <option value="¿Cuál es el nombre de tu mejor amigo de la infancia?">¿Cuál es el nombre de tu mejor amigo de la infancia?</option>
+                <option value="¿Cuál es tu película favorita?">¿Cuál es tu película favorita?</option>
+                <option value="¿Cuál fue tu primer trabajo?">¿Cuál fue tu primer trabajo?</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label for="respuestaSeguridad" class="form-label">Respuesta</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="respuestaSeguridad" 
+                [(ngModel)]="registerData.respuestaSeguridad"
+                name="respuestaSeguridad"
+                required
+                placeholder="Tu respuesta">
+              <small class="text-muted">Recuerda esta respuesta, la necesitarás para recuperar tu contraseña</small>
+            </div>
+            
+            <div class="d-grid mb-3">
+              <button type="submit" class="btn btn-primary btn-lg" [disabled]="isLoading">
+                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                <i class="bi bi-person-plus" *ngIf="!isLoading"></i>
+                {{ isLoading ? 'Registrando...' : 'Crear Cuenta' }}
+              </button>
+            </div>
+          </form>
+          
+          <div class="text-center mt-4">
+            <p class="mb-0">¿Ya tienes cuenta? 
+              <a routerLink="/login" class="text-primary fw-bold">Inicia sesión aquí</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

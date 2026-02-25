@@ -1,0 +1,51 @@
+# Dependencias
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build
+dist/
+.angular/
+out-tsc/
+tmp/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.production
+environment.ts
+environment.prod.ts
+
+# Testing
+coverage/
+.nyc_output/
+
+# Logs
+logs/
+*.log
+
+# Angular specific
+.angular/cache/
+
+# E2E
+e2e/*.js
+e2e/*.map
+
+# Misc
+*.sublime-workspace
+.sass-cache/
+connect.lock
+typings/

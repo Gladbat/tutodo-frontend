@@ -1,0 +1,257 @@
+<div class="container mt-4 mb-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white py-3">
+          <h3 class="mb-0"><i class="bi bi-plus-circle"></i> Publicar Nuevo Producto</h3>
+        </div>
+        
+        <div class="card-body p-4">
+          <div class="alert alert-info mb-4">
+            <i class="bi bi-info-circle"></i> 
+            Llena el formulario para publicar tu producto. Es <strong>gratis</strong> y solo toma unos minutos.
+          </div>
+
+          <div class="alert alert-danger" *ngIf="errorMessage">
+            <i class="bi bi-exclamation-triangle"></i> {{ errorMessage }}
+          </div>
+          
+          <form (ngSubmit)="onSubmit()">
+            
+            <!-- SECCIÓN DE IMÁGENES -->
+            <div class="mb-4">
+              <label class="form-label fw-bold">
+                Imágenes del Producto <span class="text-danger">*</span>
+              </label>
+              
+              <!-- Input de archivos -->
+              <div class="mb-3">
+                <input 
+                  type="file" 
+                  class="form-control" 
+                  (change)="onFileSelected($event)"
+                  accept="image/*"
+                  multiple
+                  [disabled]="selectedFiles.length >= maxImages">
+                <small class="text-muted">
+                  Máximo {{ maxImages }} imágenes. Formatos: JPG, PNG, WEBP. Tamaño máximo: 5MB por imagen.
+                </small>
+              </div>
+
+              <!-- Preview de imágenes -->
+              <div class="row g-2" *ngIf="imagePreviews.length > 0">
+                <div class="col-6 col-md-3" *ngFor="let preview of imagePreviews; let i = index">
+                  <div class="image-preview-container">
+                    <img [src]="preview" [alt]="'Preview ' + (i + 1)" class="img-thumbnail" loading="lazy">
+                    <button 
+                      type="button" 
+                      class="btn btn-danger btn-sm remove-btn"
+                      (click)="removeImage(i)"
+                      title="Quitar imagen">
+                      <i class="bi bi-x"></i>
+                    </button>
+                    <span class="badge bg-primary position-absolute top-0 start-0 m-1" *ngIf="i === 0">
+                      Principal
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="alert alert-warning mt-2" *ngIf="selectedFiles.length === 0">
+                <i class="bi bi-camera"></i> Agrega al menos una imagen de tu producto
+              </div>
+            </div>
+
+            <hr class="my-4">
+
+            <!-- Nombre -->
+            <div class="mb-4">
+              <label for="nombre" class="form-label fw-bold">
+                Nombre del Producto <span class="text-danger">*</span>
+              </label>
+              <input 
+                type="text" 
+                class="form-control form-control-lg" 
+                id="nombre" 
+                [(ngModel)]="producto.nombre"
+                name="nombre"
+                required
+                placeholder="Ej: iPhone 13 Pro 256GB">
+              <small class="text-muted">Sé claro y específico</small>
+            </div>
+
+            <!-- Descripción -->
+            <div class="mb-4">
+              <label for="descripcion" class="form-label fw-bold">
+                Descripción <span class="text-danger">*</span>
+              </label>
+              <textarea 
+                class="form-control" 
+                id="descripcion" 
+                [(ngModel)]="producto.descripcion"
+                name="descripcion"
+                rows="6"
+                required
+                placeholder="Describe tu producto en detalle:
+• Estado del producto
+• Características principales
+• Marca, modelo, color, tamaño, etc.
+• Qué incluye
+• Motivo de venta (opcional)
+
+Ejemplo: iPhone 13 Pro de 256GB en color azul. Está como nuevo, batería al 100%, sin rayones. Incluye caja original, cargador y cable. Lo vendo porque me cambié de teléfono."></textarea>
+              <small class="text-muted">
+                <i class="bi bi-info-circle"></i> 
+                Escribe toda la información importante aquí. Mínimo 10 caracteres.
+              </small>
+            </div>
+
+            <div class="row">
+              <!-- Precio -->
+              <div class="col-md-4 mb-4">
+                <label for="precio" class="form-label fw-bold">
+                  Precio (S/) <span class="text-danger">*</span>
+                </label>
+                <input 
+                  type="number" 
+                  class="form-control form-control-lg" 
+                  id="precio" 
+                  [(ngModel)]="producto.precio"
+                  name="precio"
+                  min="0"
+                  step="0.01"
+                  required
+                  placeholder="0.00">
+              </div>
+
+              <!-- Categoría -->
+              <div class="col-md-4 mb-4">
+                <label for="categoriaId" class="form-label fw-bold">
+                  Categoría <span class="text-danger">*</span>
+                </label>
+                <select 
+                  class="form-select form-select-lg" 
+                  id="categoriaId" 
+                  [(ngModel)]="producto.categoriaId"
+                  name="categoriaId"
+                  required>
+                  <option [value]="0" disabled>Selecciona</option>
+                  <option *ngFor="let categoria of categorias" [value]="categoria.id">
+                    {{ categoria.nombre }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Estado -->
+              <div class="col-md-4 mb-4">
+                <label for="estado" class="form-label fw-bold">
+                  Estado <span class="text-danger">*</span>
+                </label>
+                <select 
+                  class="form-select form-select-lg" 
+                  id="estado" 
+                  [(ngModel)]="producto.estado"
+                  name="estado"
+                  required>
+                  <option value="nuevo">Nuevo</option>
+                  <option value="usado">Usado</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Ubicación -->
+            <div class="mb-4">
+              <label class="form-label fw-bold">
+                <i class="bi bi-geo-alt"></i> Ubicación
+              </label>
+              
+              <button 
+                type="button" 
+                class="btn btn-outline-primary w-100 mb-3"
+                (click)="toggleMapa()">
+                <i class="bi bi-map"></i> 
+                {{ mostrarMapa ? 'Ocultar Mapa' : 'Agregar Ubicación en Mapa' }}
+              </button>
+
+              <!-- Mapa -->
+              <div *ngIf="mostrarMapa" class="map-section mb-3">
+                <div class="alert alert-info">
+                  <i class="bi bi-info-circle"></i> 
+                  <strong>Privacidad:</strong> Tu ubicación exacta no será visible. 
+                  Solo se mostrará un área aproximada de {{ RADIO_PRIVACIDAD }}m para proteger tu privacidad.
+                </div>
+
+                <!-- Controles del mapa -->
+                <div class="map-controls mb-2">
+                  <div class="input-group mb-2">
+                    <input 
+                      type="text" 
+                      class="form-control" 
+                      placeholder="Buscar dirección..."
+                      [(ngModel)]="direccionBusqueda"
+                      name="direccionBusqueda"
+                      (keyup.enter)="buscarDireccion()">
+                    <button class="btn btn-primary" type="button" (click)="buscarDireccion()">
+                      <i class="bi bi-search"></i> Buscar
+                    </button>
+                  </div>
+                  
+                  <div class="d-flex gap-2">
+                    <button 
+                      type="button" 
+                      class="btn btn-success btn-sm flex-grow-1"
+                      (click)="obtenerUbicacionActual()">
+                      <i class="bi bi-crosshair"></i> Usar mi ubicación
+                    </button>
+                    <button 
+                      type="button" 
+                      class="btn btn-danger btn-sm"
+                      (click)="limpiarUbicacion()"
+                      *ngIf="ubicacionSeleccionada">
+                      <i class="bi bi-trash"></i> Limpiar
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Contenedor del mapa -->
+                <div #mapContainer class="map-container"></div>
+                
+                <!-- Ubicación seleccionada -->
+                <div class="alert alert-success mt-2" *ngIf="ubicacionSeleccionada">
+                  <i class="bi bi-check-circle"></i> 
+                  <strong>Ubicación seleccionada:</strong> {{ producto.direccion || 'Coordenadas guardadas' }}
+                </div>
+              </div>
+
+              <!-- Dirección manual (solo si no usa mapa) -->
+              <div *ngIf="!mostrarMapa">
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  id="direccion" 
+                  [(ngModel)]="producto.direccion"
+                  name="direccion"
+                  placeholder="Ej: Av. Larco 123, Trujillo (Opcional)">
+                <small class="text-muted">
+                  Puedes escribir una dirección general o usar el mapa para mayor precisión
+                </small>
+              </div>
+            </div>
+
+            <!-- Botones -->
+            <div class="d-flex gap-3">
+              <button type="submit" class="btn btn-primary btn-lg flex-grow-1" [disabled]="isLoading">
+                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                <i class="bi bi-check-circle" *ngIf="!isLoading"></i>
+                {{ isLoading ? 'Publicando...' : 'Publicar Producto' }}
+              </button>
+              <a routerLink="/productos" class="btn btn-outline-secondary btn-lg">
+                <i class="bi bi-x-circle"></i> Cancelar
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

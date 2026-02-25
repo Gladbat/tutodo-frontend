@@ -1,0 +1,70 @@
+<div class="container mt-4 mb-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-flag"></i> Mis Reportes</h2>
+    <span class="badge bg-warning text-dark">{{ reportes.length }} reportes</span>
+  </div>
+
+  <!-- Información -->
+  <div class="alert alert-info mb-4">
+    <i class="bi bi-info-circle"></i> 
+    Aquí puedes ver todos los reportes que has realizado. Los productos con muchos reportes serán revisados por los administradores.
+  </div>
+
+  <!-- Loader -->
+  <div class="text-center py-5" *ngIf="isLoading">
+    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
+    <p class="mt-3">Cargando tus reportes...</p>
+  </div>
+
+  <!-- Lista de reportes -->
+  <div *ngIf="!isLoading">
+    <div class="row">
+      <div class="col-md-6 col-lg-4 mb-4" *ngFor="let reporte of reportes">
+        <div class="card h-100">
+          <div class="card-header bg-light">
+            <div class="d-flex justify-content-between align-items-start">
+              <h6 class="mb-0">
+                <a [routerLink]="['/productos', reporte.productoId]" class="text-decoration-none">
+                  {{ reporte.productoNombre }}
+                </a>
+              </h6>
+              <span class="badge" [ngClass]="getRazonBadgeClass(reporte.razon)">
+                <i class="bi bi-flag"></i>
+              </span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <strong class="text-muted small">Razón:</strong>
+              <p class="mb-0">{{ reporte.razon }}</p>
+            </div>
+
+            <div class="mb-3" *ngIf="reporte.comentario">
+              <strong class="text-muted small">Comentario:</strong>
+              <p class="mb-0 text-muted small">{{ reporte.comentario }}</p>
+            </div>
+
+            <div class="text-muted small">
+              <i class="bi bi-calendar"></i> {{ reporte.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}
+            </div>
+          </div>
+          <div class="card-footer bg-white">
+            <a [routerLink]="['/productos', reporte.productoId]" class="btn btn-sm btn-outline-primary w-100">
+              <i class="bi bi-eye"></i> Ver Producto
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sin reportes -->
+    <div *ngIf="reportes.length === 0" class="text-center py-5">
+      <i class="bi bi-inbox" style="font-size: 5rem; color: #dee2e6;"></i>
+      <h3 class="mt-3">No has reportado ningún producto</h3>
+      <p class="text-muted mb-4">Cuando encuentres algo incorrecto, puedes reportarlo para mantener la comunidad segura.</p>
+      <a routerLink="/productos" class="btn btn-primary">
+        <i class="bi bi-search"></i> Explorar Productos
+      </a>
+    </div>
+  </div>
+</div>

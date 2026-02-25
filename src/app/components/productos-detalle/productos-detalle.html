@@ -1,0 +1,231 @@
+<div class="container mt-4 mb-5" *ngIf="!isLoading && producto">
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a routerLink="/">Inicio</a></li>
+      <li class="breadcrumb-item"><a routerLink="/productos">Productos</a></li>
+      <li class="breadcrumb-item active">{{ producto.nombre }}</li>
+    </ol>
+  </nav>
+
+  <div class="row">
+    <!-- Galería de Imágenes -->
+    <div class="col-lg-6 mb-4">
+      <div class="card shadow-sm">
+        <!-- Imagen Principal con controles -->
+        <div class="imagen-principal mb-3 position-relative">
+          <img [src]="imagenSeleccionada" [alt]="producto.nombre" class="img-fluid rounded">
+          
+          <!-- Botones de navegación -->
+          <div *ngIf="getImagenes().length > 1">
+            <!-- Botón Anterior -->
+            <button class="btn btn-dark btn-navegacion btn-anterior" 
+                    (click)="imagenAnterior()"
+                    title="Imagen anterior">
+              <i class="bi bi-chevron-left"></i>
+            </button>
+            
+            <!-- Botón Siguiente -->
+            <button class="btn btn-dark btn-navegacion btn-siguiente" 
+                    (click)="imagenSiguiente()"
+                    title="Imagen siguiente">
+              <i class="bi bi-chevron-right"></i>
+            </button>
+            
+            <!-- Contador de imágenes -->
+            <div class="contador-imagenes">
+              {{ getImagenIndex() }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Miniaturas -->
+        <div class="miniaturas d-flex gap-2 overflow-auto" *ngIf="getImagenes().length > 1">
+          <img 
+            *ngFor="let imagen of getImagenes()"
+            [src]="imagen" 
+            [alt]="producto.nombre"
+            class="miniatura"
+            [class.active]="imagenSeleccionada === imagen"
+            (click)="seleccionarImagen(imagen)">
+        </div>
+      </div>
+    </div>
+
+    <!-- Información del Producto -->
+    <div class="col-lg-6">
+      <div class="card shadow-sm p-4">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <div>
+            <span class="badge mb-2"
+                  [class.bg-success]="producto.estado === 'nuevo'"
+                  [class.bg-warning]="producto.estado === 'usado'">
+              {{ producto.estado === 'nuevo' ? 'Nuevo' : 'Usado' }}
+            </span>
+            <h2 class="mb-0">{{ producto.nombre }}</h2>
+          </div>
+          <button 
+            class="btn btn-outline-danger"
+            (click)="toggleFavorito()"
+            *ngIf="isLoggedIn() && !esPropio() && !esAdmin()">
+            <i class="bi" [class.bi-heart]="!esFavorito" [class.bi-heart-fill]="esFavorito"></i>
+            {{ esFavorito ? 'Quitar' : 'Favorito' }}
+          </button>
+        </div>
+
+        <!-- Precio -->
+        <div class="precio-container mb-4">
+          <h3 class="text-primary mb-0">S/ {{ producto.precio }}</h3>
+          <small class="text-muted" *ngIf="producto.cantidadFavoritos && producto.cantidadFavoritos > 0">
+            <i class="bi bi-heart-fill text-danger"></i> {{ producto.cantidadFavoritos }} favoritos
+          </small>
+        </div>
+
+        <!-- Categoría -->
+        <div class="mb-3">
+          <span class="text-muted">Categoría:</span>
+          <span class="ms-2"><i class="bi bi-tag"></i> {{ producto.categoriaNombre }}</span>
+        </div>
+
+        <!-- Ubicación -->
+        <div class="mb-4" *ngIf="producto.direccion">
+          <span class="text-muted">Ubicación:</span>
+          <span class="ms-2"><i class="bi bi-geo-alt"></i> {{ producto.direccion }}</span>
+        </div>
+
+        <!-- Descripción -->
+        <div class="mb-4">
+          <h5 class="mb-3">Descripción</h5>
+          <p class="text-justify" style="white-space: pre-wrap;">{{ producto.descripcion }}</p>
+        </div>
+
+        <!-- Información del Vendedor -->
+        <div class="card bg-light mb-4">
+          <div class="card-body">
+            <h5 class="mb-3"><i class="bi bi-person-circle"></i> Vendedor</h5>
+            <p class="mb-2">
+              <strong>Nombre:</strong> {{ producto.usuarioNombre }}
+            </p>
+            <p class="mb-0">
+              <strong>WhatsApp:</strong> {{ producto.usuarioWhatsapp }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Botón de Contacto -->
+        <div class="d-grid gap-2" *ngIf="!esPropio() && !esAdmin()">
+          <button class="btn btn-success btn-lg" (click)="abrirWhatsApp()">
+            <i class="bi bi-whatsapp"></i> Contactar por WhatsApp
+          </button>
+          <button 
+            class="btn"
+            [class.btn-outline-warning]="!yaReportado"
+            [class.btn-secondary]="yaReportado"
+            [disabled]="yaReportado"
+            (click)="abrirModalReporte()">
+            <i class="bi bi-flag"></i> {{ yaReportado ? 'Reportaste este producto' : 'Reportar este producto' }}
+          </button>
+        </div>
+
+        <!-- Mensaje si es propio -->
+        <div class="alert alert-info" *ngIf="esPropio()">
+          <i class="bi bi-info-circle"></i> Este es tu producto. Puedes editarlo desde "Mis Publicaciones".
+        </div>
+
+        <!-- Mensaje si es admin -->
+        <div class="alert alert-secondary" *ngIf="esAdmin() && !esPropio()">
+          <i class="bi bi-shield-check"></i> Vista de administrador. Los administradores no pueden interactuar con productos (favoritos, reportar, contactar).
+        </div>
+
+        <!-- Fechas -->
+        <div class="text-muted small mt-3">
+          <p class="mb-1">
+            <i class="bi bi-calendar"></i> Publicado: {{ producto.fechaCreacion | date:'dd/MM/yyyy' }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Productos Relacionados (Opcional) -->
+  <div class="mt-5">
+    <h4 class="mb-4">Productos Similares</h4>
+    <div class="alert alert-secondary text-center">
+      <i class="bi bi-info-circle"></i> Próximamente: productos relacionados
+    </div>
+  </div>
+
+  <!-- Mapa de Ubicación -->
+  <div class="mt-5" *ngIf="tieneUbicacion()">
+    <h4 class="mb-3">
+      <i class="bi bi-geo-alt"></i> Ubicación Aproximada
+    </h4>
+    
+    <div class="alert alert-info">
+      <i class="bi bi-shield-check"></i> 
+      <strong>Privacidad protegida:</strong> Se muestra un área aproximada de {{ RADIO_PRIVACIDAD }}m. 
+      La ubicación exacta solo se comparte al contactar al vendedor.
+    </div>
+
+    <div class="map-container-detalle">
+      <div #mapaUbicacion style="width: 100%; height: 400px; border-radius: 8px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Loader -->
+<div class="container mt-5 text-center" *ngIf="isLoading">
+  <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
+  <p class="mt-3">Cargando producto...</p>
+</div>
+
+<!-- Modal de Reportar -->
+<div class="modal fade show d-block" *ngIf="mostrarModalReporte" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-flag text-warning"></i> Reportar Producto
+        </h5>
+        <button type="button" class="btn-close" (click)="cerrarModalReporte()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-info">
+          <i class="bi bi-info-circle"></i> 
+          Ayúdanos a mantener la comunidad segura reportando productos que incumplan las normas.
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label"><strong>Selecciona la razón del reporte:</strong></label>
+          <select class="form-select" [(ngModel)]="razonSeleccionada" required>
+            <option value="">-- Selecciona una razón --</option>
+            <option *ngFor="let razon of reporteService.RAZONES_REPORTE" [value]="razon">
+              {{ razon }}
+            </option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Comentario adicional (opcional):</label>
+          <textarea 
+            class="form-control" 
+            rows="3" 
+            [(ngModel)]="comentarioReporte"
+            maxlength="500"
+            placeholder="Describe con más detalle el problema..."></textarea>
+          <small class="text-muted">{{ comentarioReporte.length }}/500 caracteres</small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cerrarModalReporte()" [disabled]="enviandoReporte">
+          Cancelar
+        </button>
+        <button type="button" class="btn btn-warning" (click)="enviarReporte()" [disabled]="!razonSeleccionada || enviandoReporte">
+          <span *ngIf="enviandoReporte" class="spinner-border spinner-border-sm me-2"></span>
+          {{ enviandoReporte ? 'Enviando...' : 'Enviar Reporte' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

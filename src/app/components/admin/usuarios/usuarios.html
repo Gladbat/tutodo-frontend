@@ -1,0 +1,267 @@
+<div class="container-fluid mt-4">
+  <div class="row">
+    <!-- Sidebar -->
+    <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+      <div class="position-sticky pt-3">
+        <h5 class="px-3 mb-3">
+          <i class="bi bi-shield-check text-danger"></i> Panel Admin
+        </h5>
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/admin/dashboard">
+              <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" routerLink="/admin/usuarios">
+              <i class="bi bi-people"></i> Usuarios
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/admin/productos">
+              <i class="bi bi-box-seam"></i> Productos
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/admin/reportes">
+              <i class="bi bi-flag"></i> Reportes
+            </a>
+          </li>
+          <li class="nav-item">
+            <hr>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/">
+              <i class="bi bi-arrow-left"></i> Volver al Marketplace
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Contenido Principal -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Gestión de Usuarios</h1>
+        <span class="badge bg-primary">{{ usuarios.length }} usuarios totales</span>
+      </div>
+
+      <!-- Barra de búsqueda y filtros -->
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input 
+              type="text" 
+              class="form-control" 
+              placeholder="Buscar por nombre, email o WhatsApp..."
+              [(ngModel)]="searchTerm"
+              (keyup)="filtrarUsuarios()">
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="btn-group w-100" role="group">
+            <button 
+              type="button" 
+              class="btn"
+              [ngClass]="filtroEstado === 'todos' ? 'btn-primary' : 'btn-outline-primary'"
+              (click)="cambiarFiltroEstado('todos')">
+              <i class="bi bi-people"></i> Todos ({{ usuarios.length }})
+            </button>
+            <button 
+              type="button" 
+              class="btn"
+              [ngClass]="filtroEstado === 'activos' ? 'btn-success' : 'btn-outline-success'"
+              (click)="cambiarFiltroEstado('activos')">
+              <i class="bi bi-check-circle"></i> Activos ({{ contarPorEstado('activos') }})
+            </button>
+            <button 
+              type="button" 
+              class="btn"
+              [ngClass]="filtroEstado === 'suspendidos' ? 'btn-warning' : 'btn-outline-warning'"
+              (click)="cambiarFiltroEstado('suspendidos')">
+              <i class="bi bi-pause-circle"></i> Suspendidos ({{ contarPorEstado('suspendidos') }})
+            </button>
+            <button 
+              type="button" 
+              class="btn"
+              [ngClass]="filtroEstado === 'eliminados' ? 'btn-danger' : 'btn-outline-danger'"
+              (click)="cambiarFiltroEstado('eliminados')">
+              <i class="bi bi-trash"></i> Eliminados ({{ contarPorEstado('eliminados') }})
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loader -->
+      <div class="text-center py-5" *ngIf="isLoading">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
+        <p class="mt-3">Cargando usuarios...</p>
+      </div>
+
+      <!-- Tabla de Usuarios -->
+      <div class="card shadow" *ngIf="!isLoading">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nombre</th>
+                  <th>Email</th>
+                  <th>WhatsApp</th>
+                  <th>Rol</th>
+                  <th>Estado</th>
+                  <th>Fecha Registro</th>
+                  <th>Publicaciones</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let usuario of usuariosFiltrados">
+                  <td>{{ usuario.id }}</td>
+                  <td>
+                    <strong>{{ usuario.nombre }} {{ usuario.apellido }}</strong>
+                    <i class="bi bi-shield-check text-danger ms-1" *ngIf="esAdmin(usuario)"></i>
+                  </td>
+                  <td>{{ usuario.email }}</td>
+                  <td>{{ usuario.numeroWhatsapp | whatsappFormat }}</td>
+                  <td>
+                    <span class="badge" [ngClass]="getRolBadgeClass(usuario.rol)">
+                      {{ usuario.rol }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge" 
+                          [ngClass]="{
+                            'bg-success': !usuario.suspendido && !usuario.eliminado,
+                            'bg-warning text-dark': usuario.suspendido && !usuario.eliminado,
+                            'bg-danger': usuario.eliminado
+                          }">
+                      {{ usuario.eliminado ? 'Eliminado' : (usuario.suspendido ? 'Suspendido' : 'Activo') }}
+                    </span>
+                  </td>
+                  <td>{{ usuario.fechaCreacion | date:'dd/MM/yyyy' }}</td>
+                  <td>
+                    <span class="badge bg-secondary">
+                      {{ usuario.cantidadPublicaciones || 0 }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="btn-group" role="group">
+                      <!-- Ver productos: solo para usuarios no-admin -->
+                      <button 
+                        *ngIf="!esAdmin(usuario)"
+                        (click)="verProductosUsuario(usuario)"
+                        class="btn btn-sm btn-outline-primary"
+                        title="Ver productos">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                      
+                      <!-- Suspender: no mostrar si es mi cuenta o está eliminado -->
+                      <button 
+                        *ngIf="!usuario.suspendido && !usuario.eliminado && !esMiCuenta(usuario)"
+                        (click)="suspenderUsuario(usuario)"
+                        class="btn btn-sm btn-outline-warning"
+                        title="Suspender usuario">
+                        <i class="bi bi-pause-circle"></i>
+                      </button>
+                      
+                      <!-- Reactivar: no mostrar si es mi cuenta o está eliminado -->
+                      <button 
+                        *ngIf="usuario.suspendido && !usuario.eliminado && !esMiCuenta(usuario)"
+                        (click)="reactivarUsuario(usuario)"
+                        class="btn btn-sm btn-outline-success"
+                        title="Reactivar usuario">
+                        <i class="bi bi-play-circle"></i>
+                      </button>
+                      
+                      <!-- Eliminar: no mostrar si es mi cuenta o ya está eliminado -->
+                      <button 
+                        *ngIf="!usuario.eliminado && !esMiCuenta(usuario)"
+                        (click)="eliminarUsuario(usuario)"
+                        class="btn btn-sm btn-outline-danger"
+                        title="Eliminar usuario">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                      
+                      <!-- Mensaje si está eliminado -->
+                      <span *ngIf="usuario.eliminado" class="badge bg-danger">
+                        <i class="bi bi-x-circle"></i> Cuenta eliminada
+                      </span>
+                      
+                      <!-- Mensaje si es mi cuenta -->
+                      <span *ngIf="esMiCuenta(usuario)" class="badge bg-info text-dark">
+                        Tu cuenta
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Sin resultados -->
+            <div class="text-center py-4" *ngIf="usuariosFiltrados.length === 0">
+              <i class="bi bi-inbox" style="font-size: 3rem; color: #dee2e6;"></i>
+              <p class="text-muted mt-2">No se encontraron usuarios</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Modal de Productos del Usuario -->
+<div class="modal-overlay" *ngIf="mostrarModalProductos" (click)="cerrarModalProductos()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h5 class="modal-title">
+        <i class="bi bi-box-seam"></i>
+        Productos de {{ usuarioSeleccionado?.nombre }} {{ usuarioSeleccionado?.apellido }}
+      </h5>
+      <button type="button" class="btn-close" (click)="cerrarModalProductos()"></button>
+    </div>
+    
+    <div class="modal-body">
+      <!-- Loader -->
+      <div class="text-center py-5" *ngIf="cargandoProductos">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2">Cargando productos...</p>
+      </div>
+
+      <!-- Lista de productos -->
+      <div *ngIf="!cargandoProductos && productosUsuario.length > 0" class="productos-list">
+        <div class="producto-item" *ngFor="let producto of productosUsuario">
+          <img [src]="getImageUrl(producto)" [alt]="producto.nombre" class="producto-img" loading="lazy">
+          <div class="producto-info">
+            <h6>{{ producto.nombre }}</h6>
+            <p class="text-muted mb-1">{{ producto.categoriaNombre || 'Sin categoría' }}</p>
+            <p class="precio mb-1">S/ {{ producto.precio }}</p>
+            <span class="badge" 
+                  [ngClass]="{
+                    'bg-success': producto.estaActivo && !producto.vendido && !producto.eliminado,
+                    'bg-danger': !producto.estaActivo && !producto.vendido && !producto.eliminado,
+                    'bg-secondary': producto.vendido,
+                    'bg-dark': producto.eliminado
+                  }">
+              {{ producto.vendido ? 'Vendido' : producto.eliminado ? 'Eliminado' : producto.estaActivo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sin productos -->
+      <div *ngIf="!cargandoProductos && productosUsuario.length === 0" class="text-center py-5">
+        <i class="bi bi-inbox" style="font-size: 3rem; color: #dee2e6;"></i>
+        <p class="text-muted mt-2">Este usuario no tiene productos publicados</p>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="cerrarModalProductos()">
+        Cerrar
+      </button>
+    </div>
+  </div>
+</div>

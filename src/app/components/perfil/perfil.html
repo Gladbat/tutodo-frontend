@@ -1,0 +1,190 @@
+<div class="container mt-4 mb-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white py-3">
+          <h3 class="mb-0"><i class="bi bi-person-circle"></i> Mi Perfil</h3>
+        </div>
+        
+        <div class="card-body p-4">
+          <!-- Mensajes -->
+          <div class="alert alert-success" *ngIf="successMessage">
+            <i class="bi bi-check-circle"></i> {{ successMessage }}
+          </div>
+
+          <div class="alert alert-danger" *ngIf="errorMessage">
+            <i class="bi bi-exclamation-triangle"></i> {{ errorMessage }}
+          </div>
+
+          <!-- Información del Usuario (Modo Ver) -->
+          <div *ngIf="!editMode && usuario">
+            <div class="text-center mb-4">
+              <div class="avatar-circle mb-3">
+                <i class="bi bi-person-fill"></i>
+              </div>
+              <h4>{{ usuario.nombre }} {{ usuario.apellido }}</h4>
+              <p class="text-muted">{{ usuario.email }}</p>
+            </div>
+
+            <div class="info-group">
+              <div class="info-item">
+                <i class="bi bi-envelope"></i>
+                <div>
+                  <small class="text-muted">Email</small>
+                  <p class="mb-0">{{ usuario.email }}</p>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <i class="bi bi-person"></i>
+                <div>
+                  <small class="text-muted">Nombre Completo</small>
+                  <p class="mb-0">{{ usuario.nombre }} {{ usuario.apellido }}</p>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <i class="bi bi-whatsapp"></i>
+                <div>
+                  <small class="text-muted">WhatsApp</small>
+                  <p class="mb-0">{{ usuario.numeroWhatsapp | whatsappFormat }}</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-grid gap-2 mt-4">
+              <button class="btn btn-primary" (click)="activarEdicion()">
+                <i class="bi bi-pencil"></i> Editar Perfil
+              </button>
+              <a routerLink="/mis-publicaciones" class="btn btn-outline-primary">
+                <i class="bi bi-box-seam"></i> Ver Mis Publicaciones
+              </a>
+              <a routerLink="/favoritos" class="btn btn-outline-danger">
+                <i class="bi bi-heart"></i> Ver Favoritos
+              </a>
+            </div>
+          </div>
+
+          <!-- Formulario de Edición -->
+          <form *ngIf="editMode" (ngSubmit)="guardarCambios()">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="nombre" class="form-label fw-bold">Nombre</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  id="nombre" 
+                  [(ngModel)]="perfilData.nombre"
+                  name="nombre"
+                  required>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label for="apellido" class="form-label fw-bold">Apellido</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  id="apellido" 
+                  [(ngModel)]="perfilData.apellido"
+                  name="apellido"
+                  required>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="numeroWhatsapp" class="form-label fw-bold">Número de WhatsApp</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light text-dark fw-bold" style="min-width: 60px;">
+                  <i class="bi bi-whatsapp me-1"></i> +51
+                </span>
+                <input 
+                  type="tel" 
+                  class="form-control" 
+                  id="numeroWhatsapp" 
+                  [(ngModel)]="whatsappInput"
+                  (input)="onWhatsappInput()"
+                  name="whatsappInput"
+                  maxlength="11"
+                  placeholder="987 654 321">
+              </div>
+              <small class="text-muted">Ingresa 9 dígitos (se aceptan espacios)</small>
+            </div>
+
+            <hr class="my-4">
+
+            <h5 class="mb-3">Cambiar Contraseña (Opcional)</h5>
+
+            <div class="mb-3">
+              <label for="nuevaContrasena" class="form-label fw-bold">Nueva Contraseña</label>
+              <input 
+                type="password" 
+                class="form-control" 
+                id="nuevaContrasena" 
+                [(ngModel)]="nuevaContrasena"
+                name="nuevaContrasena"
+                minlength="6"
+                placeholder="Dejar en blanco para no cambiar">
+            </div>
+
+            <div class="mb-4">
+              <label for="confirmarContrasena" class="form-label fw-bold">Confirmar Contraseña</label>
+              <input 
+                type="password" 
+                class="form-control" 
+                id="confirmarContrasena" 
+                [(ngModel)]="confirmarContrasena"
+                name="confirmarContrasena"
+                placeholder="Confirma tu nueva contraseña">
+            </div>
+
+            <hr class="my-4">
+
+            <h5 class="mb-3">
+              <i class="bi bi-shield-lock"></i> Pregunta de Seguridad (Opcional)
+            </h5>
+            <p class="text-muted small mb-3">
+              Configura o actualiza tu pregunta de seguridad para recuperar tu contraseña en caso de olvido
+            </p>
+
+            <div class="mb-3">
+              <label for="preguntaSeguridad" class="form-label fw-bold">Pregunta de Seguridad</label>
+              <select 
+                class="form-select" 
+                id="preguntaSeguridad" 
+                [(ngModel)]="perfilData.preguntaSeguridad"
+                name="preguntaSeguridad">
+                <option value="">Selecciona una pregunta</option>
+                <option *ngFor="let pregunta of preguntasSeguridad" [value]="pregunta">
+                  {{ pregunta }}
+                </option>
+              </select>
+            </div>
+
+            <div class="mb-4">
+              <label for="respuestaSeguridad" class="form-label fw-bold">Respuesta</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="respuestaSeguridad" 
+                [(ngModel)]="perfilData.respuestaSeguridad"
+                name="respuestaSeguridad"
+                placeholder="Tu respuesta a la pregunta de seguridad">
+              <small class="text-muted">Esta respuesta te permitirá recuperar tu contraseña</small>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-success flex-grow-1" [disabled]="isLoading">
+                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                <i class="bi bi-check-circle" *ngIf="!isLoading"></i>
+                {{ isLoading ? 'Guardando...' : 'Guardar Cambios' }}
+              </button>
+              <button type="button" class="btn btn-secondary" (click)="cancelarEdicion()">
+                <i class="bi bi-x-circle"></i> Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

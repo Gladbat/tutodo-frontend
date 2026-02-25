@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Backend Connection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Test de Conexión al Backend</h1>
+    
+    <div class="test-section">
+        <h2>1. Test de Categorías (GET)</h2>
+        <button onclick="testCategorias()">Probar GET /api/categorias</button>
+        <div id="result-categorias" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test de Registro (POST)</h2>
+        <button onclick="testRegistro()">Probar POST /api/auth/register</button>
+        <div id="result-registro" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Test de Login (POST)</h2>
+        <button onclick="testLogin()">Probar POST /api/auth/login</button>
+        <div id="result-login" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Test de Favoritos (POST)</h2>
+        <p>Primero debes hacer login para obtener un token</p>
+        <button onclick="testAgregarFavorito()">Probar POST /api/favoritos</button>
+        <div id="result-favoritos" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Test de Listar Favoritos (GET)</h2>
+        <input type="number" id="usuarioId" placeholder="Usuario ID" value="1" style="padding: 8px; margin-right: 10px;">
+        <button onclick="testListarFavoritos()">Probar GET /api/favoritos/usuario/{id}</button>
+        <div id="result-listar-favoritos" class="result"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8080';
+        let authToken = null;
+
+        function showResult(elementId, message, isSuccess) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = 'result ' + (isSuccess ? 'success' : 'error');
+        }
+
+        async function testCategorias() {
+            const resultId = 'result-categorias';
+            showResult(resultId, 'Probando...', true);
+            
+            try {
+                const response = await fetch(`${API_URL}/api/categorias`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(resultId, 
+                        `✅ ÉXITO!\n\nStatus: ${response.status}\n\nRespuesta:\n${JSON.stringify(data, null, 2)}`, 
+                        true
+                    );
+                } else {
+                    showResult(resultId, 
+                        `❌ ERROR\n\nStatus: ${response.status}\n\nRespuesta:\n${JSON.stringify(data, null, 2)}`, 
+                        false
+                    );
+                }
+            } catch (error) {
+                showResult(resultId, 
+                    `❌ ERROR DE CONEXIÓN\n\n${error.message}\n\nPosibles causas:\n1. Backend no está corriendo\n2. Puerto incorrecto\n3. CORS bloqueado`, 
+                    false
+                );
+            }
+        }
+
+        async function testRegistro() {
+            const resultId = 'result-registro';
+            showResult(resultId, 'Probando...', true);
+            
+            const randomNum = Math.floor(Math.random() * 10000);
+            const testData = {
+                email: `test${randomNum}@example.com`,
+                contrasena: '123456',
+                nombre: 'Test',
+                apellido: 'User',
+                numeroWhatsapp: `+5198765${String(randomNum).padStart(4, '0')}`
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/api/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(resultId, 
+                        `✅ ÉXITO!\n\nStatus: ${response.status}\n\nDatos enviados:\n${JSON.stringify(testData, null, 2)}\n\nRespuesta:\n${JSON.stringify(data, null, 2)}`, 
+                        true
+                    );
+                } else {
+                    showResult(resultId, 
+                        `❌ ERROR\n\nStatus: ${response.status}\n\nDatos enviados:\n${JSON.stringify(testData, null, 2)}\n\nRespuesta:\n${JSON.stringify(data, null, 2)}`, 
+                        false
+                    );
+                }
+            } catch (error) {
+                showResult(resultId, 
+                    `❌ ERROR DE CONEXIÓN\n\n${error.message}\n\nPosibles causas:\n1. Backend no está corriendo\n2. CORS bloqueado\n3. Puerto incorrecto`, 
+                    false
+                );
+            }
+        }
+
+        async function testLogin() {
+            const resultId = 'result-login';
+            showResult(resultId, 'Probando...', true);
+            
+            const testData = {
+                email: 'test@example.com',
+                contrasena: '123456'
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(resultId, 
+                        `✅ ÉXITO!\n\nStatus: ${response.status}\n\nDatos enviados:\n${JSON.stringify(testData, null, 2)}\n\nRespuesta:\n${JSON.stringify(data, null, 2)}`, 
+                        true
+                    );
+                } else {
+                    showResult(resultId, 
+                        `⚠️ RESPUESTA DEL SERVIDOR\n\nStatus: ${response.status}\n\nDatos enviados:\n${JSON.stringify(testData, null, 2)}\n\nRespuesta:\n${JSON.stringify(data, null, 2)}\n\nNota: Es normal que falle si el usuario no existe.`, 
+                        false
+                    );
+                }
+            } catch (error) {
+                showResult(resultId, 
+                    `❌ ERROR DE CONEXIÓN\n\n${error.message}\n\nPosibles causas:\n1. Backend no está corriendo\n2. CORS bloqueado\n3. Puerto incorrecto`, 
+                    false
+                );
+            }
+        }
+
+        async function testAgregarFavorito() {
+            const resultId = 'result-favoritos';
+            
+            if (!authToken) {
+                showResult(resultId, 
+                    '⚠️ Primero debes hacer login para obtener un token', 
+                    false
+                );
+                return;
+            }
+
+            showResult(resultId, 'Probando...', true);
+            
+            const testData = {
+                usuarioId: 1,
+                productoId: 1
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/api/favoritos`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(resultId, 
+                        `✅ ÉXITO!\n\nStatus: ${response.status}\n\nDatos enviados:\n${JSON.stringify(testData, null, 2)}\n\nRespuesta:\n${JSON.stringify(data, null, 2)}`, 
+                        true
+                    );
+                } else {
+                    showResult(resultId, 
+                        `❌ ERROR\n\nStatus: ${response.status}\n\nDatos enviados:\n${JSON.stringify(testData, null, 2)}\n\nRespuesta:\n${JSON.stringify(data, null, 2)}`, 
+                        false
+                    );
+                }
+            } catch (error) {
+                showResult(resultId, 
+                    `❌ ERROR DE CONEXIÓN\n\n${error.message}`, 
+                    false
+                );
+            }
+        }
+
+        async function testListarFavoritos() {
+            const resultId = 'result-listar-favoritos';
+            const usuarioId = document.getElementById('usuarioId').value;
+            
+            if (!usuarioId) {
+                showResult(resultId, '⚠️ Ingresa un Usuario ID', false);
+                return;
+            }
+
+            showResult(resultId, 'Probando...', true);
+
+            try {
+                const response = await fetch(`${API_URL}/api/favoritos/usuario/${usuarioId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(resultId, 
+                        `✅ ÉXITO!\n\nStatus: ${response.status}\n\nUsuario ID: ${usuarioId}\n\nCantidad de favoritos: ${data.length}\n\nRespuesta:\n${JSON.stringify(data, null, 2)}`, 
+                        true
+                    );
+                } else {
+                    showResult(resultId, 
+                        `❌ ERROR\n\nStatus: ${response.status}\n\nRespuesta:\n${JSON.stringify(data, null, 2)}`, 
+                        false
+                    );
+                }
+            } catch (error) {
+                showResult(resultId, 
+                    `❌ ERROR DE CONEXIÓN\n\n${error.message}`, 
+                    false
+                );
+            }
+        }
+    </script>
+</body>
+</html>

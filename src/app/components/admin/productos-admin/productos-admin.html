@@ -1,0 +1,369 @@
+<div class="container-fluid mt-4">
+  <div class="row">
+    <!-- Sidebar -->
+    <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+      <div class="position-sticky pt-3">
+        <h5 class="px-3 mb-3">
+          <i class="bi bi-shield-check text-danger"></i> Panel Admin
+        </h5>
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/admin/dashboard">
+              <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/admin/usuarios">
+              <i class="bi bi-people"></i> Usuarios
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" routerLink="/admin/productos">
+              <i class="bi bi-box-seam"></i> Productos
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/admin/reportes">
+              <i class="bi bi-flag"></i> Reportes
+            </a>
+          </li>
+          <li class="nav-item">
+            <hr>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/productos">
+              <i class="bi bi-arrow-left"></i> Volver al Marketplace
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Contenido Principal -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Gestión de Productos</h1>
+        <span class="badge bg-primary">{{ productos.length }} productos totales</span>
+      </div>
+
+      <!-- Estadísticas rápidas -->
+      <div class="row mb-4">
+        <div class="col-md-3">
+          <div class="card text-center">
+            <div class="card-body">
+              <h5 class="text-success">{{ contarActivos() }}</h5>
+              <small>Activos</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="card text-center">
+            <div class="card-body">
+              <h5 class="text-warning">{{ contarInactivos() }}</h5>
+              <small>Inactivos</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="card text-center">
+            <div class="card-body">
+              <h5 class="text-info">{{ contarVendidos() }}</h5>
+              <small>Vendidos</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="card text-center">
+            <div class="card-body">
+              <h5 class="text-danger">{{ contarEliminados() }}</h5>
+              <small>Eliminados</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-center">
+            <div class="card-body">
+              <h5>{{ productos.length }}</h5>
+              <small>Totales</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input 
+              type="text" 
+              class="form-control" 
+              placeholder="Buscar productos..."
+              [(ngModel)]="searchTerm"
+              (keyup)="filtrarProductos()">
+          </div>
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" [(ngModel)]="filtroEstado" (change)="filtrarProductos()">
+            <option value="todos">Todos los estados</option>
+            <option value="activos">Solo Activos</option>
+            <option value="inactivos">Solo Inactivos</option>
+            <option value="vendidos">Solo Vendidos</option>
+            <option value="eliminados">Solo Eliminados</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Loader -->
+      <div class="text-center py-5" *ngIf="isLoading">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
+        <p class="mt-3">Cargando productos...</p>
+      </div>
+
+      <!-- Tabla de Productos -->
+      <div class="card shadow" *ngIf="!isLoading">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Imagen</th>
+                  <th>Producto</th>
+                  <th>Categoría</th>
+                  <th>Precio</th>
+                  <th>Vendedor</th>
+                  <th>Estado</th>
+                  <th>Fecha</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let producto of paginatedProductos">
+                  <td>
+                    <img [src]="getImageUrl(producto)" [alt]="producto.nombre" 
+                         loading="lazy"
+                         style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;">
+                  </td>
+                  <td>
+                    <strong>{{ producto.nombre }}</strong>
+                    <br>
+                    <small class="text-muted">{{ producto.descripcion | slice:0:50 }}...</small>
+                  </td>
+                  <td>{{ producto.categoriaNombre }}</td>
+                  <td><strong>S/ {{ producto.precio }}</strong></td>
+                  <td>{{ producto.usuarioNombre }}</td>
+                  <td>
+                    <span class="badge bg-success" *ngIf="producto.estaActivo && !producto.vendido && !producto.eliminado">Activo</span>
+                    <span class="badge bg-warning text-dark" *ngIf="!producto.estaActivo && !producto.vendido && !producto.eliminado">Inactivo</span>
+                    <span class="badge bg-secondary" *ngIf="producto.vendido">Vendido</span>
+                    <span class="badge bg-danger" *ngIf="producto.eliminado">Eliminado</span>
+                  </td>
+                  <td>{{ producto.fechaCreacion | date:'dd/MM/yyyy' }}</td>
+                  <td>
+                    <button class="btn btn-sm btn-outline-primary me-1" 
+                            (click)="verProducto(producto)" 
+                            title="Ver producto">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                    
+                    <!-- Inhabilitar producto activo -->
+                    <button *ngIf="producto.estaActivo && !producto.vendido && !producto.eliminado" 
+                            class="btn btn-sm btn-outline-warning me-1" 
+                            (click)="inhabilitarProducto(producto)" 
+                            title="Inhabilitar publicación">
+                      <i class="bi bi-x-circle"></i>
+                    </button>
+                    
+                    <!-- Reactivar producto inactivo -->
+                    <button *ngIf="!producto.estaActivo && !producto.vendido && !producto.eliminado" 
+                            class="btn btn-sm btn-outline-success me-1" 
+                            (click)="reactivarProducto(producto)" 
+                            title="Reactivar producto">
+                      <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                    
+                    <!-- Eliminar producto -->
+                    <button *ngIf="!producto.eliminado"
+                            class="btn btn-sm btn-outline-danger" 
+                            (click)="eliminarProducto(producto)" 
+                            title="Eliminar producto">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Sin resultados -->
+            <div class="text-center py-4" *ngIf="productosFiltrados.length === 0">
+              <i class="bi bi-inbox" style="font-size: 3rem; color: #dee2e6;"></i>
+              <p class="text-muted mt-2">No se encontraron productos</p>
+            </div>
+          </div>
+          
+          <!-- Paginación -->
+          <div class="d-flex justify-content-between align-items-center mt-3" *ngIf="totalPages > 1">
+            <div class="text-muted">
+              Mostrando {{ currentPage * pageSize + 1 }} - {{ Math.min((currentPage + 1) * pageSize, productosFiltrados.length) }} de {{ productosFiltrados.length }} productos
+            </div>
+            <nav>
+              <ul class="pagination mb-0">
+                <li class="page-item" [class.disabled]="currentPage === 0">
+                  <a class="page-link" (click)="cambiarPagina(currentPage - 1)" style="cursor: pointer;">
+                    Anterior
+                  </a>
+                </li>
+                <li class="page-item" *ngFor="let page of getPaginaNumeros()" [class.active]="page === currentPage">
+                  <a class="page-link" (click)="cambiarPagina(page)" style="cursor: pointer;">
+                    {{ page + 1 }}
+                  </a>
+                </li>
+                <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
+                  <a class="page-link" (click)="cambiarPagina(currentPage + 1)" style="cursor: pointer;">
+                    Siguiente
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Modal de Detalle de Producto -->
+<div class="modal fade show d-block" *ngIf="mostrarModal && productoSeleccionado" 
+     tabindex="-1" 
+     style="background-color: rgba(0,0,0,0.5);"
+     (click)="cerrarModal()">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" 
+       (click)="$event.stopPropagation()">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-box-seam"></i> Detalle del Producto
+        </h5>
+        <button type="button" class="btn-close" (click)="cerrarModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <!-- Galería de Imágenes -->
+          <div class="col-md-6 mb-3">
+            <div class="card">
+              <!-- Imagen Principal -->
+              <div class="text-center mb-2">
+                <img [src]="imagenSeleccionada" 
+                     [alt]="productoSeleccionado.nombre" 
+                     class="img-fluid rounded"
+                     loading="lazy"
+                     style="max-height: 300px; object-fit: contain;">
+              </div>
+
+              <!-- Miniaturas -->
+              <div class="d-flex gap-2 overflow-auto p-2" *ngIf="getImagenes().length > 1">
+                <img *ngFor="let imagen of getImagenes()"
+                     [src]="imagen" 
+                     [alt]="productoSeleccionado.nombre"
+                     class="rounded"
+                     loading="lazy"
+                     [class.border-primary]="imagenSeleccionada === imagen"
+                     [class.border]="imagenSeleccionada === imagen"
+                     style="width: 60px; height: 60px; object-fit: cover; cursor: pointer;"
+                     (click)="seleccionarImagen(imagen)">
+              </div>
+            </div>
+          </div>
+
+          <!-- Información del Producto -->
+          <div class="col-md-6">
+            <!-- Nombre y Estado -->
+            <div class="mb-3">
+              <h4>{{ productoSeleccionado.nombre }}</h4>
+              <div class="d-flex gap-2 mb-2">
+                <span class="badge" 
+                      [class.bg-success]="productoSeleccionado.estado === 'nuevo'"
+                      [class.bg-warning]="productoSeleccionado.estado === 'usado'">
+                  {{ productoSeleccionado.estado === 'nuevo' ? 'Nuevo' : 'Usado' }}
+                </span>
+                <span class="badge bg-success" *ngIf="productoSeleccionado.estaActivo && !productoSeleccionado.vendido && !productoSeleccionado.eliminado">Activo</span>
+                <span class="badge bg-warning text-dark" *ngIf="!productoSeleccionado.estaActivo && !productoSeleccionado.vendido && !productoSeleccionado.eliminado">Inactivo</span>
+                <span class="badge bg-secondary" *ngIf="productoSeleccionado.vendido">Vendido</span>
+                <span class="badge bg-danger" *ngIf="productoSeleccionado.eliminado">Eliminado</span>
+              </div>
+            </div>
+
+            <!-- Precio -->
+            <div class="mb-3">
+              <h3 class="text-primary mb-0">S/ {{ productoSeleccionado.precio }}</h3>
+              <small class="text-muted" *ngIf="productoSeleccionado.cantidadFavoritos && productoSeleccionado.cantidadFavoritos > 0">
+                <i class="bi bi-heart-fill text-danger"></i> {{ productoSeleccionado.cantidadFavoritos }} favoritos
+              </small>
+            </div>
+
+            <!-- Categoría -->
+            <div class="mb-2">
+              <strong>Categoría:</strong>
+              <span class="ms-2"><i class="bi bi-tag"></i> {{ productoSeleccionado.categoriaNombre }}</span>
+            </div>
+
+            <!-- Ubicación -->
+            <div class="mb-3" *ngIf="productoSeleccionado.direccion">
+              <strong>Ubicación:</strong>
+              <span class="ms-2"><i class="bi bi-geo-alt"></i> {{ productoSeleccionado.direccion }}</span>
+            </div>
+
+            <!-- Vendedor -->
+            <div class="card bg-light mb-3">
+              <div class="card-body py-2">
+                <h6 class="mb-2"><i class="bi bi-person-circle"></i> Vendedor</h6>
+                <p class="mb-1 small">
+                  <strong>Nombre:</strong> {{ productoSeleccionado.usuarioNombre }}
+                </p>
+                <p class="mb-0 small">
+                  <strong>WhatsApp:</strong> {{ productoSeleccionado.usuarioWhatsapp }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Fechas -->
+            <div class="small text-muted">
+              <p class="mb-1">
+                <i class="bi bi-calendar"></i> Publicado: {{ productoSeleccionado.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}
+              </p>
+              <p class="mb-0">
+                <i class="bi bi-clock"></i> Actualizado: {{ productoSeleccionado.fechaActualizacion | date:'dd/MM/yyyy HH:mm' }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Descripción -->
+        <div class="row mt-3">
+          <div class="col-12">
+            <h6>Descripción</h6>
+            <div class="card bg-light">
+              <div class="card-body">
+                <p class="mb-0" style="white-space: pre-wrap;">{{ productoSeleccionado.descripcion }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button *ngIf="!productoSeleccionado.estaActivo && !productoSeleccionado.vendido && !productoSeleccionado.eliminado" 
+                class="btn btn-success" 
+                (click)="reactivarProducto(productoSeleccionado); cerrarModal()">
+          <i class="bi bi-arrow-clockwise"></i> Reactivar
+        </button>
+        <button class="btn btn-danger" 
+                (click)="eliminarProducto(productoSeleccionado); cerrarModal()">
+          <i class="bi bi-trash"></i> Eliminar
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="cerrarModal()">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

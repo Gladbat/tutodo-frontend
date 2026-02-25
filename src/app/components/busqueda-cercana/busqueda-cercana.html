@@ -1,0 +1,232 @@
+<div class="busqueda-container">
+  <!-- Panel de Controles -->
+  <div class="controls-panel">
+    <div class="container-fluid">
+      <div class="row align-items-center">
+        <!-- Título -->
+        <div class="col-md-3">
+          <h4 class="mb-0">
+            <i class="bi bi-geo-alt-fill"></i> Buscar Cerca de Mí
+          </h4>
+        </div>
+
+        <!-- Controles -->
+        <div class="col-md-6">
+          <div class="d-flex gap-3 align-items-center">
+            <!-- Radio -->
+            <div class="flex-grow-1">
+              <label class="form-label mb-1 small fw-bold">Radio de búsqueda</label>
+              <select 
+                class="form-select form-select-sm" 
+                [(ngModel)]="radioKm"
+                (change)="cambiarRadio()">
+                <option *ngFor="let option of radioOptions" [value]="option.value">
+                  {{ option.label }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Categoría -->
+            <div>
+              <label class="form-label mb-1 small fw-bold">Categoría</label>
+              <select 
+                class="form-select form-select-sm" 
+                [(ngModel)]="categoriaSeleccionada"
+                style="min-width: 150px;">
+                <option [value]="null">Todas</option>
+                <option *ngFor="let categoria of categorias" [value]="categoria.id">
+                  {{ categoria.nombre }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="col-md-3 text-end">
+          <button 
+            class="btn btn-success me-2"
+            (click)="obtenerMiUbicacion()"
+            [disabled]="buscandoUbicacion">
+            <span *ngIf="buscandoUbicacion" class="spinner-border spinner-border-sm me-1"></span>
+            <i class="bi bi-crosshair" *ngIf="!buscandoUbicacion"></i>
+            {{ buscandoUbicacion ? 'Obteniendo...' : 'Mi Ubicación' }}
+          </button>
+          <button 
+            class="btn btn-primary"
+            (click)="buscarCercanos()"
+            [disabled]="isLoading">
+            <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-1"></span>
+            <i class="bi bi-search" *ngIf="!isLoading"></i>
+            {{ isLoading ? 'Buscando...' : 'Buscar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenedor Principal -->
+  <div class="main-content">
+    <!-- Mapa -->
+    <div class="map-section">
+      <div #mapContainer class="map-container"></div>
+      
+      <!-- Info flotante -->
+      <div class="info-box">
+        <div class="info-item">
+          <i class="bi bi-circle-fill text-primary"></i>
+          <span>Tu ubicación</span>
+        </div>
+        <div class="info-item">
+          <i class="bi bi-circle-fill text-danger"></i>
+          <span>Productos</span>
+        </div>
+        <div class="info-item">
+          <i class="bi bi-bullseye"></i>
+          <span>{{ radioKm }} km de radio</span>
+        </div>
+      </div>
+
+      <!-- Instrucciones -->
+      <div class="instructions" *ngIf="productos.length === 0 && !isLoading">
+        <div class="alert alert-info">
+          <i class="bi bi-info-circle"></i>
+          <strong>¿Cómo funciona?</strong>
+          <ol class="mb-0 mt-2 small">
+            <li>Usa "Mi Ubicación" o arrastra el marcador azul</li>
+            <li>Selecciona el radio de búsqueda</li>
+            <li>Haz clic en "Buscar" para encontrar productos cercanos</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel de Resultados -->
+    <div class="results-panel" [class.show]="productos.length > 0">
+      <div class="results-header">
+        <h5 class="mb-0">
+          <i class="bi bi-list-check"></i> Productos Cercanos
+        </h5>
+        <span class="badge bg-primary">{{ productos.length }}</span>
+      </div>
+
+      <div class="results-content">
+        <!-- Sin resultados -->
+        <div class="empty-state" *ngIf="productos.length === 0 && !isLoading">
+          <i class="bi bi-inbox display-1 text-muted"></i>
+          <p class="text-muted mt-3">No hay productos en esta área</p>
+          <p class="small text-muted">Intenta ampliar el radio de búsqueda</p>
+        </div>
+
+        <!-- Cargando -->
+        <div class="text-center py-5" *ngIf="isLoading">
+          <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;"></div>
+          <p class="text-muted">Buscando productos cercanos...</p>
+        </div>
+
+        <!-- Lista de productos -->
+        <div class="products-list" *ngIf="productos.length > 0 && !isLoading">
+          <div class="product-card" *ngFor="let producto of productos">
+            <div class="product-image">
+              <img [src]="getImageUrl(producto)" [alt]="producto.nombre">
+              <span class="product-badge" 
+                    [class.badge-success]="producto.estado === 'nuevo'" 
+                    [class.badge-warning]="producto.estado === 'usado'">
+                {{ producto.estado === 'nuevo' ? 'Nuevo' : 'Usado' }}
+              </span>
+            </div>
+            <div class="product-info">
+              <h6 class="product-title">{{ producto.nombre }}</h6>
+              <p class="product-category">
+                <i class="bi bi-tag"></i> {{ producto.categoriaNombre }}
+              </p>
+              <div class="product-footer">
+                <span class="product-price">S/ {{ producto.precio }}</span>
+                <span class="product-distance">
+                  <i class="bi bi-geo-alt"></i> {{ getDistancia(producto) }}
+                </span>
+              </div>
+              <div class="d-grid gap-2 mt-2">
+                <button class="btn btn-sm btn-primary" (click)="verDetalles(producto)">
+                  <i class="bi bi-eye"></i> Ver detalles
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" (click)="verEnMapa(producto)">
+                  <i class="bi bi-map"></i> Ver en mapa
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Detalles del Producto -->
+<div class="modal fade" id="productoModal" tabindex="-1" *ngIf="productoSeleccionado">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ productoSeleccionado.nombre }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <!-- Galería de Imágenes -->
+          <div class="col-md-6">
+            <div class="product-gallery">
+              <img [src]="getImageUrl(productoSeleccionado)" 
+                   class="img-fluid rounded" 
+                   [alt]="productoSeleccionado.nombre">
+            </div>
+          </div>
+
+          <!-- Información del Producto -->
+          <div class="col-md-6">
+            <div class="product-details">
+              <div class="price-section mb-3">
+                <h2 class="product-modal-price">S/ {{ productoSeleccionado.precio }}</h2>
+                <span class="badge" 
+                      [class.bg-success]="productoSeleccionado.estado === 'nuevo'"
+                      [class.bg-warning]="productoSeleccionado.estado === 'usado'">
+                  {{ productoSeleccionado.estado === 'nuevo' ? 'Nuevo' : 'Usado' }}
+                </span>
+              </div>
+
+              <div class="info-item mb-3">
+                <i class="bi bi-tag-fill text-primary"></i>
+                <span><strong>Categoría:</strong> {{ productoSeleccionado.categoriaNombre }}</span>
+              </div>
+
+              <div class="info-item mb-3">
+                <i class="bi bi-geo-alt-fill text-danger"></i>
+                <span><strong>Distancia:</strong> {{ getDistancia(productoSeleccionado) }}</span>
+              </div>
+
+              <div class="info-item mb-3">
+                <i class="bi bi-person-fill text-secondary"></i>
+                <span><strong>Vendedor:</strong> {{ productoSeleccionado.usuarioNombre }}</span>
+              </div>
+
+              <div class="description-section mb-3">
+                <h6><i class="bi bi-card-text"></i> Descripción</h6>
+                <p class="text-muted">{{ productoSeleccionado.descripcion || 'Sin descripción' }}</p>
+              </div>
+
+              <div class="d-grid gap-2">
+                <a [href]="getWhatsAppLink(productoSeleccionado)" 
+                   target="_blank" 
+                   class="btn btn-success btn-lg">
+                  <i class="bi bi-whatsapp"></i> Contactar por WhatsApp
+                </a>
+                <button class="btn btn-outline-primary" (click)="verEnMapa(productoSeleccionado)" data-bs-dismiss="modal">
+                  <i class="bi bi-map"></i> Ver en el mapa
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
