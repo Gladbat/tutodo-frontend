@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface ImagenProducto {
   id: number;
@@ -15,7 +16,7 @@ export interface ImagenProducto {
   providedIn: 'root'
 })
 export class ImagenService {
-  private apiUrl = 'http://localhost:8080/api/imagenes';
+  private apiUrl = `${environment.apiUrl}/api/imagenes`;
 
   constructor(private http: HttpClient) { }
 

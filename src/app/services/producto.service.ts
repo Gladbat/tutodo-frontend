@@ -3,12 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Producto, ProductoCreateRequest, ProductoUpdateRequest } from '../models/producto.model';
 import { Page } from '../models/page.model';  // ← Agregar import
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductoService {
-  private apiUrl = 'http://localhost:8080/api/productos';
+  private apiUrl = `${environment.apiUrl}/api/productos`;
 
   constructor(private http: HttpClient) { }
 

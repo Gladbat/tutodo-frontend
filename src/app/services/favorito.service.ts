@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Favorito, FavoritoRequest } from '../models/favorito.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FavoritoService {
-  private apiUrl = 'http://localhost:8080/api/favoritos';
+  private apiUrl = `${environment.apiUrl}/api/favoritos`;
   
   private favoritosSubject = new BehaviorSubject<Favorito[]>([]);
   public favoritos$ = this.favoritosSubject.asObservable();

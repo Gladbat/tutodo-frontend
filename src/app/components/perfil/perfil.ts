@@ -7,6 +7,7 @@ import { AuthService, User } from '../../services/auth.service';
 import { UsuarioService } from '../../services/usuario.service';
 import { ToastrService } from 'ngx-toastr';
 import { WhatsappFormatPipe } from '../../pipes/whatsapp-format.pipe';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-perfil',
@@ -164,7 +165,7 @@ export class Perfil implements OnInit {
 
     this.isLoading = true;
 
-    this.http.put<any>(`http://localhost:8080/api/usuarios/${this.usuario?.usuarioId}`, dataToSend)
+    this.http.put<any>(`${environment.apiUrl}/api/usuarios/${this.usuario?.usuarioId}`, dataToSend)
       .subscribe({
         next: (response) => {
           console.log('Perfil actualizado', response);

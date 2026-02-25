@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface ReporteRequest {
   productoId: number;
@@ -24,7 +25,7 @@ export interface ReporteDTO {
   providedIn: 'root'
 })
 export class ReporteService {
-  private apiUrl = 'http://localhost:8080/api/reportes';
+  private apiUrl = `${environment.apiUrl}/api/reportes`;
 
   // Razones predefinidas para reportar
   readonly RAZONES_REPORTE = [

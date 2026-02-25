@@ -13,7 +13,7 @@ export interface BusquedaCercanaResponse {
   providedIn: 'root'
 })
 export class BusquedaCercanaService {
-  private apiUrl = 'http://localhost:8080/api/productos';
+  private apiUrl = `${environment.apiUrl}/api/productos`;
 
   constructor(private http: HttpClient) {}
 
